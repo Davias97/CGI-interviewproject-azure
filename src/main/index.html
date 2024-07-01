@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>2D Graph Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+<h1>Welcome to insideCircle method visualization graph!</h1>
+<input type="text" id="searchBar" placeholder="Enter record ID">
+<button id="searchButton">Search ID</button>
+
+<a href="submitdata.html">Go to Submit Circle Data Page</a>
+
+<canvas id="circleChart" width="800" height="600"></canvas>
+<script>
+    var urlParams = new URLSearchParams(window.location.search);
+    var id = urlParams.get('id');
+    var chart;
+
+    function fetchDataAndGenerateGraph(id) {
+        fetch('https://interviewprojectdemo.azurewebsites.net/api/getIsInsideCircleData/' + id + '?code=dkpnwh_V0llG2QCyJjyvuZjrpDzmrxABLPKRiqY2rLNHAzFuDmJCvA==')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('No record found with the given ID');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+                var ctx = document.getElementById('circleChart').getContext('2d');
+
+                // Generate points for the circle
+                var circlePoints = [];
+                for (var angle = 0; angle < 360; angle += 1) {
+                    var radians = angle * Math.PI / 180;
+                    circlePoints.push({
+                        x: data.centre.x + data.radius * Math.cos(radians),
+                        y: data.centre.y + data.radius * Math.sin(radians)
+                    });
+                }
+
+                if (chart) {
+                    chart.destroy();
+                }
+
+                chart = new Chart(ctx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'Circle',
+                            data: circlePoints,
+                            backgroundColor: 'rgba(0, 0, 255, 0.1)',
+                            borderColor: 'blue',
+                            pointRadius: 0,
+                            fill: false,
+                            showLine: true
+                        }, {
+                            label: 'CircleCenter',
+                            data: [{
+                                x: data.centre.x,
+                                y: data.centre.y
+                            }],
+                            backgroundColor: 'blue',
+                            pointRadius: 3,
+                            fill: false
+                        }, {
+                            label: 'Point',
+                            data: [{
+                                x: data.point.x,
+                                y: data.point.y
+                            }],
+                            backgroundColor: data.isInsideCircle ? 'green' : 'red',
+                            pointRadius: 3,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                min: -10,
+                                max: 10,
+                                grid: {
+                                    color: function (context) {
+                                        return context.tick.value == 0 ? 'black' : 'rgba(0, 0, 0, 0.1)';
+                                    },
+                                    lineWidth: function (context) {
+                                        return context.tick.value == 0 ? 2 : 1;
+                                    },
+                                },
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            },
+                            y: {
+                                min: -10,
+                                max: 10,
+                                grid: {
+                                    color: function (context) {
+                                        return context.tick.value == 0 ? 'black' : 'rgba(0, 0, 0, 0.1)';
+                                    },
+                                    lineWidth: function (context) {
+                                        return context.tick.value == 0 ? 2 : 1;
+                                    },
+                                },
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                alert(error.message);
+                console.error('Problem with fetch operation occured', error);
+            });
+    }
+
+    if (id) {
+        fetchDataAndGenerateGraph(id);
+    }
+
+    document.getElementById('searchButton').addEventListener('click', function () {
+        var id = document.getElementById('searchBar').value;
+
+        if (!id) {
+            alert('No id provided');
+        } else if (isNaN(id)) {
+            alert('ID must be a number');
+        } else if (id < 0) {
+            alert('ID must be a positive number');
+        } else if (id % 1 !== 0) {
+            alert('ID must be an integer');
+        } else {
+            fetchDataAndGenerateGraph(id);
+        }
+    });
+</script>
+</body>
+
+</html>
