@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Submit Circle Data</title>
+</head>
+
+<body>
+<h1>Submit Circle Data</h1>
+<form id="circleDataForm">
+    <label for="centreX">Centre X:</label><br>
+    <input type="text" id="centreX" name="centreX"><br>
+    <label for="centreY">Centre Y:</label><br>
+    <input type="text" id="centreY" name="centreY"><br>
+    <label for="radius">Radius:</label><br>
+    <input type="text" id="radius" name="radius"><br>
+    <label for="pointX">Point X:</label><br>
+    <input type="text" id="pointX" name="pointX"><br>
+    <label for="pointY">Point Y:</label><br>
+    <input type="text" id="pointY" name="pointY"><br>
+    <input type="submit" value="Submit">
+</form>
+
+<a href="index.html">Go back to index</a>
+
+<div id="message"></div>
+<div id="errorMessage" style="color: red;"></div>
+
+<script>
+    document.getElementById('circleDataForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        var centreX = document.getElementById('centreX').value.trim();
+        var centreY = document.getElementById('centreY').value.trim();
+        var radius = document.getElementById('radius').value.trim();
+        var pointX = document.getElementById('pointX').value.trim();
+        var pointY = document.getElementById('pointY').value.trim();
+
+        // Check if all fields are filled
+        if (!centreX || !centreY || !radius || !pointX || !pointY) {
+            document.getElementById('errorMessage').innerText = 'All fields must be filled';
+            return;
+        }
+
+        // Check if the inputs are numbers
+        if (isNaN(centreX) || isNaN(centreY) || isNaN(radius) || isNaN(pointX) || isNaN(pointY)) {
+            document.getElementById('errorMessage').innerText = 'All inputs must be numbers';
+            return;
+        }
+
+        // Check if the radius is greater than 0
+        if (parseFloat(radius) <= 0) {
+            document.getElementById('errorMessage').innerText = 'Radius must be greater than 0';
+            return;
+        }
+
+        var data = {
+            centre: {
+                x: parseFloat(centreX),
+                y: parseFloat(centreY)
+            },
+            radius: parseFloat(radius),
+            point: {
+                x: parseFloat(pointX),
+                y: parseFloat(pointY)
+            }
+        };
+
+        fetch('https://interviewprojectdemo.azurewebsites.net/api/IsInsideCircle?code=ub0I_SvT1MWP0c6t5k_qz79dEoBwjMnyvIzT1ewF7RWSAzFujtCbLA==', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                document.getElementById('message').innerText = 'Submission success. The results were added to the database with ID: ' + data.id;
+                document.getElementById('errorMessage').innerText = ''; // Clear the error message
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                document.getElementById('errorMessage').innerText = 'An error occurred: ' + error;
+            });
+    });
+</script>
+</body>
+
+</html>
